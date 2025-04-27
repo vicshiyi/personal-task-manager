@@ -1,9 +1,11 @@
-import { View, Text, StyleSheet } from 'react-native';
+// components/TaskItem.tsx
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Task } from '../types/Task';
 
 interface Props {
   task: Task;
+  onToggleStatus: (id: string) => void;
 }
 
 function formatDate(date: Date): string {
@@ -14,23 +16,22 @@ function formatDate(date: Date): string {
   });
 }
 
-export default function TaskItem({ task }: Props) {
+export default function TaskItem({ task, onToggleStatus }: Props) {
   return (
-    <View style={[styles.taskContainer, { backgroundColor: task.color }]}> 
+    <View style={[styles.taskContainer, { backgroundColor: task.color }]}>
       <View style={{ flex: 1 }}>
         <Text style={styles.title}>{task.title}</Text>
         <Text style={styles.time}>{formatDate(task.date)} | {task.time}</Text>
         {task.location && <Text style={styles.location}>{task.location}</Text>}
       </View>
-      <View style={styles.iconGroup}>
+
+      <TouchableOpacity onPress={() => onToggleStatus(task.id)}>
         <Ionicons
-          name="checkmark-circle"
-          size={28}
-          color={task.completed ? 'lightgreen' : 'gray'}
-          style={styles.icon}
+          name={task.status === 'pending' ? 'checkmark-circle' : 'close-circle'}
+          size={30}
+          color={task.status === 'pending' ? 'lightgreen' : 'tomato'}
         />
-        <Ionicons name="create" size={24} color="lightgray" style={styles.icon} />
-      </View>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -58,13 +59,5 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     color: 'white',
     marginTop: 2,
-  },
-  iconGroup: {
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    marginLeft: 10,
-  },
-  icon: {
-    marginVertical: 4,
   },
 });

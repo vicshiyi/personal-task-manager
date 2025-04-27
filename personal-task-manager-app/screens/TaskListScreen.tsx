@@ -48,11 +48,53 @@ function compareTime(t1: string, t2: string): number {
   return parse(t1) - parse(t2);
 }
 
+function getFilterSubtitle(filter: Filter): string {
+  const today = new Date();
+
+  if (filter === 'Today') {
+    return today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  if (filter === 'Week') {
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay() + 1);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+
+    const startStr = startOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const endStr = endOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return `${startStr} - ${endStr}`;
+  }
+
+  if (filter === 'Month') {
+    return today.toLocaleDateString('en-US', { month: 'long' });
+  }
+
+  return '';
+}
+
 export default function TaskListScreen() {
   const [tasks, setTasks] = useState<Task[]>(mockTasks);
   const [activeFilter, setActiveFilter] = useState<Filter>('Today');
   const [activeTab, setActiveTab] = useState<Tab>('Completed');
   const insets = useSafeAreaInsets();
+
+  const today = new Date();
+  const formattedToday = today.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+
+  const handleToggleStatus = (id: string) => {
+    setTasks(prevTasks =>
+      prevTasks.map(task =>
+        task.id === id
+          ? { ...task, status: task.status === 'pending' ? 'completed' : 'pending' }
+          : task
+      )
+    );
+  };
 
   const filteredTasks = tasks.filter(task => {
     if (activeTab === 'Completed' && task.status !== 'completed') return false;
@@ -61,7 +103,12 @@ export default function TaskListScreen() {
     if (activeFilter === 'Week') return isThisWeek(task.date);
     if (activeFilter === 'Month') return isThisMonth(task.date);
     return true;
-  }).sort((a, b) => compareTime(a.time, b.time));
+  }).sort((a, b) => {
+    if (a.date.getTime() !== b.date.getTime()) {
+      return a.date.getTime() - b.date.getTime();
+    }
+    return compareTime(a.time, b.time);
+  });
 
   return (
     <SafeAreaView style={[styles.safeArea, { paddingBottom: insets.bottom }]}>
@@ -69,7 +116,7 @@ export default function TaskListScreen() {
         <View style={styles.headerRow}>
           <View>
             <Text style={styles.greeting}>Hi, Victoria!</Text>
-            <Text style={styles.date}>May 1, 2025</Text>
+            <Text style={styles.date}>{formattedToday}</Text>
           </View>
           <Image
             source={{ uri: 'https://i.pravatar.cc/100' }}
@@ -84,9 +131,9 @@ export default function TaskListScreen() {
               style={[styles.filterButton, activeFilter === f && styles.activeFilter]}
               onPress={() => setActiveFilter(f)}>
               <Text style={[styles.filterText, activeFilter === f && styles.activeFilterText]}>{f}</Text>
-              {f === 'Today' && (
-                <Text style={[styles.filterSubText, activeFilter === f && styles.activeFilterText]}>May 1</Text>
-              )}
+              <Text style={[styles.filterSubText, activeFilter === f && styles.activeFilterText]}>
+                {getFilterSubtitle(f)}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -94,7 +141,7 @@ export default function TaskListScreen() {
         <FlatList
           data={filteredTasks}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <TaskItem task={item} />}
+          renderItem={({ item }) => <TaskItem task={item} onToggleStatus={handleToggleStatus} />}
           contentContainerStyle={{ paddingBottom: 80 }}
           ListEmptyComponent={<Text style={styles.emptyText}>No tasks to show.</Text>}
         />
