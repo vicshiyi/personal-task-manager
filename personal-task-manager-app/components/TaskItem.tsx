@@ -5,6 +5,7 @@ import { Task } from '../types/Task';
 interface Props {
   task: Task;
   onToggleStatus: (id: string) => void;
+  onPress: () => void;
 }
 
 function formatDate(date: Date): string {
@@ -15,15 +16,15 @@ function formatDate(date: Date): string {
   });
 }
 
-export default function TaskItem({ task, onToggleStatus }: Props) {
+export default function TaskItem({ task, onToggleStatus, onPress }: Props) {
   const backgroundColor = task.status === 'completed' ? '#888888' : task.color;
 
   return (
-    <View style={[styles.taskContainer, { backgroundColor }]}> 
-      <View style={{ flex: 1 }}>
+    <TouchableOpacity style={[styles.taskContainer, { backgroundColor }]} onPress={onPress}>
+      <View style={styles.flex1}>
         <Text style={styles.title}>{task.title}</Text>
         <Text style={styles.time}>{formatDate(task.date)} | {task.time}</Text>
-        {task.location && <Text style={styles.location}>{task.location}</Text>}
+        {task.location ? <Text style={styles.location}>{task.location}</Text> : null}
       </View>
 
       <TouchableOpacity onPress={() => onToggleStatus(task.id)}>
@@ -33,7 +34,7 @@ export default function TaskItem({ task, onToggleStatus }: Props) {
           color={task.status === 'pending' ? 'lightgreen' : 'tomato'}
         />
       </TouchableOpacity>
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -44,6 +45,9 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
+  },
+  flex1: {
+    flex: 1,
   },
   title: {
     fontSize: 18,

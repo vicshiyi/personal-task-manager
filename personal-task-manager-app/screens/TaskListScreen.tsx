@@ -1,5 +1,6 @@
 import { SafeAreaView, View, Text, FlatList, StyleSheet, TouchableOpacity, Platform, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import { useState } from 'react';
 import TaskItem from '../components/TaskItem';
 import { mockTasks } from '../data/mockTasks';
@@ -78,6 +79,7 @@ export default function TaskListScreen() {
   const [activeFilter, setActiveFilter] = useState<Filter>('Today');
   const [activeTab, setActiveTab] = useState<Tab>('Completed');
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation();
 
   const today = new Date();
   const formattedToday = today.toLocaleDateString('en-US', {
@@ -96,6 +98,18 @@ export default function TaskListScreen() {
     );
   };
 
+  const handleEditTask = (task: Task) => {
+    navigation.navigate('EditTaskScreen', {
+      task,
+      onSave: (updatedTask: Task) => {
+        setTasks(prev => prev.map(t => (t.id === updatedTask.id ? updatedTask : t)));
+      },
+      onDelete: (id: string) => {
+        setTasks(prev => prev.filter(t => t.id !== id));
+      },
+    });
+  };
+
   const filteredTasks = tasks.filter(task => {
     if (activeTab === 'Completed' && task.status !== 'completed') return false;
     if (activeTab === 'Pending' && task.status !== 'pending') return false;
@@ -111,7 +125,7 @@ export default function TaskListScreen() {
   });
 
   return (
-    <SafeAreaView style={[styles.safeArea, { paddingBottom: insets.bottom }]}>
+    <SafeAreaView style={[styles.safeArea, { paddingBottom: insets.bottom }]}> 
       <View style={styles.container}>
         <View style={styles.headerRow}>
           <View>
@@ -141,7 +155,13 @@ export default function TaskListScreen() {
         <FlatList
           data={filteredTasks}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <TaskItem task={item} onToggleStatus={handleToggleStatus} />}
+          renderItem={({ item }) => (
+            <TaskItem
+              task={item}
+              onToggleStatus={handleToggleStatus}
+              onPress={() => handleEditTask(item)}
+            />
+          )}
           contentContainerStyle={{ paddingBottom: 80 }}
           ListEmptyComponent={<Text style={styles.emptyText}>No tasks to show.</Text>}
         />
