@@ -87,7 +87,7 @@ export default function EditTaskScreen() {
         {/* 内容区 */}
         <View style={styles.contentBlock}>
           {/* 日期 */}
-          <Text style={styles.label}>Current Date</Text>
+          <Text style={styles.label}> Date</Text>
           <TouchableOpacity onPress={() => { setTempDate(task.date); setIsDateModalVisible(true); }}>
             <View style={styles.inputWrapper}>
               <Text style={styles.inputText}>{task.date.toLocaleDateString('en-US')}</Text>
@@ -95,7 +95,7 @@ export default function EditTaskScreen() {
           </TouchableOpacity>
 
           {/* 时间 */}
-          <Text style={styles.label}>Current Time</Text>
+          <Text style={styles.label}>Time</Text>
           <TouchableOpacity onPress={() => { setTempTime(task.date); setIsTimeModalVisible(true); }}>
             <View style={styles.inputWrapper}>
               <Text style={styles.inputText}>{task.time}</Text>
