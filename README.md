@@ -117,3 +117,9 @@ You can then:
 ---
 
 ## Screenshots
+
+![Screenshots Main Page (Pending)](./readme_image/screenshot1.png)
+![Screenshots Main Page (Completed)](./readme_image/screenshot2.png)
+![Screenshots Edit Page](./readme_image/screenshot3.png)
+![Screenshots Edit Page Set Time](./readme_image/screenshot4.png)
+![Screenshots Edit Page Delete](./readme_image/screenshot5.png)
