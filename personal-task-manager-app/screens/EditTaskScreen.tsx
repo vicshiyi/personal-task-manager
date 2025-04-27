@@ -4,6 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useUser } from '../contexts/UserContext';
 import { Task } from '../types/Task';
 
 type EditTaskScreenRouteProp = RouteProp<
@@ -17,6 +19,7 @@ export default function EditTaskScreen() {
   const navigation = useNavigation();
   const route = useRoute<EditTaskScreenRouteProp>();
   const { task: originalTask, onSave, onDelete } = route.params;
+  const { avatarUrl } = useUser();
 
   const [task, setTask] = useState<Task>({ ...originalTask });
 
@@ -27,11 +30,7 @@ export default function EditTaskScreen() {
   const [tempTime, setTempTime] = useState(task.date);
 
   const today = new Date();
-  const formattedToday = today.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
+  const formattedToday = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
   const handleSave = () => {
     onSave(task);
@@ -64,134 +63,122 @@ export default function EditTaskScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {/* 顶部 Hi, Victoria */}
-      <View style={styles.headerRow}>
-        <View>
-          <Text style={styles.greeting}>Hi, Victoria!</Text>
-          <Text style={styles.date}>{formattedToday}</Text>
-        </View>
-        <Image
-          source={{ uri: 'https://i.pravatar.cc/100' }}
-          style={styles.avatar}
-        />
-      </View>
-
-      {/* Title 背景色 */}
-      <View style={[styles.titleContainer, { backgroundColor: task.color }]}>
-        <TextInput
-          style={styles.titleInput}
-          value={task.title}
-          onChangeText={(text) => setTask({ ...task, title: text })}
-          placeholder="Task Title"
-        />
-      </View>
-
-      {/* 灰色背景内容块 */}
-      <View style={styles.contentBlock}>
-        {/* 日期 */}
-        <Text style={styles.label}>Current Date</Text>
-        <TouchableOpacity onPress={() => { setTempDate(task.date); setIsDateModalVisible(true); }}>
-          <View style={styles.inputWrapper}>
-            <Text style={styles.inputText}>{task.date.toLocaleDateString('en-US')}</Text>
+    <SafeAreaView style={{ flex: 2, backgroundColor: 'white' }}>
+      <ScrollView contentContainerStyle={styles.container}>
+        {/* 顶部 Header */}
+        <View style={styles.headerRow}>
+          <View>
+            <Text style={styles.greeting}>Hi, Victoria!</Text>
+            <Text style={styles.date}>{formattedToday}</Text>
           </View>
-        </TouchableOpacity>
+          <Image source={{ uri: avatarUrl }} style={styles.avatar} />
+        </View>
 
-        {/* 时间 */}
-        <Text style={styles.label}>Current Time</Text>
-        <TouchableOpacity onPress={() => { setTempTime(task.date); setIsTimeModalVisible(true); }}>
-          <View style={styles.inputWrapper}>
-            <Text style={styles.inputText}>{task.time}</Text>
+        {/* Title */}
+        <View style={[styles.titleContainer, { backgroundColor: task.color }]}>
+          <TextInput
+            style={styles.titleInput}
+            value={task.title}
+            onChangeText={(text) => setTask({ ...task, title: text })}
+            placeholder="Task Title"
+          />
+        </View>
+
+        {/* 内容区 */}
+        <View style={styles.contentBlock}>
+          {/* 日期 */}
+          <Text style={styles.label}>Current Date</Text>
+          <TouchableOpacity onPress={() => { setTempDate(task.date); setIsDateModalVisible(true); }}>
+            <View style={styles.inputWrapper}>
+              <Text style={styles.inputText}>{task.date.toLocaleDateString('en-US')}</Text>
+            </View>
+          </TouchableOpacity>
+
+          {/* 时间 */}
+          <Text style={styles.label}>Current Time</Text>
+          <TouchableOpacity onPress={() => { setTempTime(task.date); setIsTimeModalVisible(true); }}>
+            <View style={styles.inputWrapper}>
+              <Text style={styles.inputText}>{task.time}</Text>
+            </View>
+          </TouchableOpacity>
+
+          {/* 选择颜色 */}
+          <Text style={styles.label}>Choose Color</Text>
+          <View style={styles.colorRow}>
+            {availableColors.map((color) => (
+              <TouchableOpacity
+                key={color}
+                style={[
+                  styles.colorButton,
+                  { backgroundColor: color },
+                  task.color === color && styles.selectedColor,
+                ]}
+                onPress={() => setTask({ ...task, color })}
+              />
+            ))}
           </View>
-        </TouchableOpacity>
 
-        {/* 选择颜色 */}
-        <Text style={styles.label}>Choose Color</Text>
-        <View style={styles.colorRow}>
-          {availableColors.map((color) => (
-            <TouchableOpacity
-              key={color}
-              style={[
-                styles.colorButton,
-                { backgroundColor: color },
-                task.color === color && styles.selectedColor,
-              ]}
-              onPress={() => setTask({ ...task, color })}
-            />
-          ))}
+          {/* Location */}
+          <Text style={styles.label}>Location</Text>
+          <TextInput
+            style={styles.input}
+            value={task.location}
+            onChangeText={(text) => setTask({ ...task, location: text })}
+          />
+
+          {/* Content */}
+          <Text style={styles.label}>Content</Text>
+          <TextInput
+            style={[styles.input, styles.textarea]}
+            multiline
+            numberOfLines={4}
+            value={task.content}
+            onChangeText={(text) => setTask({ ...task, content: text })}
+            placeholder="Describe your task..."
+          />
+
+          {/* Action Buttons */}
+          <View style={styles.actionRow}>
+            <TouchableOpacity style={[styles.actionButton, { backgroundColor: 'lightgreen' }]} onPress={handleSave}>
+              <Ionicons name="checkmark" size={24} color="white" />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.actionButton, { backgroundColor: 'tomato' }]} onPress={handleDelete}>
+              <Ionicons name="trash" size={24} color="white" />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.actionButton, { backgroundColor: 'gray' }]} onPress={() => navigation.goBack()}>
+              <Ionicons name="arrow-undo" size={24} color="white" />
+            </TouchableOpacity>
+          </View>
         </View>
 
-        {/* Location */}
-        <Text style={styles.label}>Location</Text>
-        <TextInput
-          style={styles.input}
-          value={task.location}
-          onChangeText={(text) => setTask({ ...task, location: text })}
-        />
-
-        {/* Content */}
-        <Text style={styles.label}>Content</Text>
-        <TextInput
-          style={[styles.input, styles.textarea]}
-          multiline
-          numberOfLines={4}
-          value={task.content}
-          onChangeText={(text) => setTask({ ...task, content: text })}
-          placeholder="Describe your task..."
-        />
-
-        {/* 三个底部按钮 */}
-        <View style={styles.actionRow}>
-          <TouchableOpacity style={[styles.actionButton, { backgroundColor: 'lightgreen' }]} onPress={handleSave}>
-            <Ionicons name="checkmark" size={24} color="white" />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.actionButton, { backgroundColor: 'tomato' }]} onPress={handleDelete}>
-            <Ionicons name="trash" size={24} color="white" />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.actionButton, { backgroundColor: 'gray' }]} onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-undo" size={24} color="white" />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* 日期弹窗 */}
-      <Modal visible={isDateModalVisible} transparent={true} animationType="slide">
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <DateTimePicker
-              value={tempDate}
-              mode="date"
-              display="default"
-              onChange={(event, selectedDate) => setTempDate(selectedDate || tempDate)}
-            />
-            <View style={styles.modalButtonRow}>
-              <Button title="Cancel" onPress={() => setIsDateModalVisible(false)} />
-              <Button title="OK" onPress={onConfirmDate} />
+        {/* 弹窗部分 */}
+        <Modal visible={isDateModalVisible} transparent={true} animationType="slide">
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <DateTimePicker value={tempDate} mode="date" display="default" onChange={(event, selectedDate) => setTempDate(selectedDate || tempDate)} />
+              <View style={styles.modalButtonRow}>
+                <Button title="Cancel" onPress={() => setIsDateModalVisible(false)} />
+                <Button title="OK" onPress={onConfirmDate} />
+              </View>
             </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
 
-      {/* 时间弹窗 */}
-      <Modal visible={isTimeModalVisible} transparent={true} animationType="slide">
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <DateTimePicker
-              value={tempTime}
-              mode="time"
-              display="default"
-              onChange={(event, selectedTime) => setTempTime(selectedTime || tempTime)}
-            />
-            <View style={styles.modalButtonRow}>
-              <Button title="Cancel" onPress={() => setIsTimeModalVisible(false)} />
-              <Button title="OK" onPress={onConfirmTime} />
+        <Modal visible={isTimeModalVisible} transparent={true} animationType="slide">
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <DateTimePicker value={tempTime} mode="time" display="default" onChange={(event, selectedTime) => setTempTime(selectedTime || tempTime)} />
+              <View style={styles.modalButtonRow}>
+                <Button title="Cancel" onPress={() => setIsTimeModalVisible(false)} />
+                <Button title="OK" onPress={onConfirmTime} />
+              </View>
             </View>
           </View>
-        </View>
-      </Modal>
-    </ScrollView>
+        </Modal>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -199,7 +186,7 @@ const styles = StyleSheet.create({
   container: { padding: 20, backgroundColor: 'white', flexGrow: 1 },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   avatar: { width: 50, height: 50, borderRadius: 25 },
-  greeting: { fontSize: 28, fontWeight: 'bold', marginBottom: 4, color: '#3a3a3a' },
+  greeting: { fontSize: 28, fontWeight: 'bold', color: '#333' },
   date: { fontSize: 16, color: '#666' },
   titleContainer: { borderRadius: 16, padding: 16, marginBottom: 20 },
   titleInput: { fontSize: 22, fontWeight: '700', color: 'white' },
