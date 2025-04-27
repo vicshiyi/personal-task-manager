@@ -1,12 +1,14 @@
 export type TaskStatus = 'completed' | 'pending';
 
+// types/Task.ts
 export interface Task {
   id: string;
   title: string;
+  location: string;
   time: string;
-  location?: string;
-  completed: boolean;
+  date: Date;
   color: string;
-  status: TaskStatus;
-  date: Date; 
+  status: 'pending' | 'completed';
+  content: string; // <-- 新增
 }
+
