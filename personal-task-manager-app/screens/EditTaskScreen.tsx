@@ -1,4 +1,10 @@
 // screens/EditTaskScreen.tsx
+//
+// Provides a screen for creating or editing a task.
+// Supports modifying title, date, time, location, color, and content.
+// Also supports deleting tasks, saving changes, and navigating back.
+// Uses DateTimePicker modal for selecting date and time.
+
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ScrollView, Platform, Modal, Button, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
@@ -8,11 +14,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useUser } from '../contexts/UserContext';
 import { Task } from '../types/Task';
 
+// Define route prop types
 type EditTaskScreenRouteProp = RouteProp<
   { params: { task: Task; onSave: (task: Task) => void; onDelete: (id: string) => void } },
   'params'
 >;
 
+// List of available colors for tasks
 const availableColors = ['#8ca9ff', '#4c9fd4', '#b08bda', '#DA817D'];
 
 export default function EditTaskScreen() {
@@ -22,21 +30,25 @@ export default function EditTaskScreen() {
   const { avatarUrl } = useUser();
 
   const [task, setTask] = useState<Task>({ ...originalTask });
-
   const [isDateModalVisible, setIsDateModalVisible] = useState(false);
   const [isTimeModalVisible, setIsTimeModalVisible] = useState(false);
-
   const [tempDate, setTempDate] = useState(task.date);
   const [tempTime, setTempTime] = useState(task.date);
 
   const today = new Date();
   const formattedToday = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
+  /**
+   * Save current task changes and navigate back.
+   */
   const handleSave = () => {
     onSave(task);
     navigation.goBack();
   };
 
+  /**
+   * Confirm and delete the current task.
+   */
   const handleDelete = () => {
     Alert.alert('Confirm Delete', 'Are you sure you want to delete this task?', [
       { text: 'Cancel', style: 'cancel' },
@@ -47,11 +59,17 @@ export default function EditTaskScreen() {
     ]);
   };
 
+  /**
+   * Confirm the selected date from DateTimePicker.
+   */
   const onConfirmDate = () => {
     setTask({ ...task, date: tempDate });
     setIsDateModalVisible(false);
   };
 
+  /**
+   * Confirm the selected time from DateTimePicker.
+   */
   const onConfirmTime = () => {
     const hours = tempTime.getHours();
     const minutes = tempTime.getMinutes();
@@ -65,7 +83,8 @@ export default function EditTaskScreen() {
   return (
     <SafeAreaView style={{ flex: 2, backgroundColor: 'white' }}>
       <ScrollView contentContainerStyle={styles.container}>
-        {/* 顶部 Header */}
+        
+        {/* Top Header */}
         <View style={styles.headerRow}>
           <View>
             <Text style={styles.greeting}>Hi, Victoria!</Text>
@@ -74,7 +93,7 @@ export default function EditTaskScreen() {
           <Image source={{ uri: avatarUrl }} style={styles.avatar} />
         </View>
 
-        {/* Title */}
+        {/* Title input with background color */}
         <View style={[styles.titleContainer, { backgroundColor: task.color }]}>
           <TextInput
             style={styles.titleInput}
@@ -84,17 +103,18 @@ export default function EditTaskScreen() {
           />
         </View>
 
-        {/* 内容区 */}
+        {/* Content Block: Date, Time, Color, Location, Content */}
         <View style={styles.contentBlock}>
-          {/* 日期 */}
-          <Text style={styles.label}> Date</Text>
+
+          {/* Date selection */}
+          <Text style={styles.label}>Date</Text>
           <TouchableOpacity onPress={() => { setTempDate(task.date); setIsDateModalVisible(true); }}>
             <View style={styles.inputWrapper}>
               <Text style={styles.inputText}>{task.date.toLocaleDateString('en-US')}</Text>
             </View>
           </TouchableOpacity>
 
-          {/* 时间 */}
+          {/* Time selection */}
           <Text style={styles.label}>Time</Text>
           <TouchableOpacity onPress={() => { setTempTime(task.date); setIsTimeModalVisible(true); }}>
             <View style={styles.inputWrapper}>
@@ -102,7 +122,7 @@ export default function EditTaskScreen() {
             </View>
           </TouchableOpacity>
 
-          {/* 选择颜色 */}
+          {/* Color selection */}
           <Text style={styles.label}>Choose Color</Text>
           <View style={styles.colorRow}>
             {availableColors.map((color) => (
@@ -118,7 +138,7 @@ export default function EditTaskScreen() {
             ))}
           </View>
 
-          {/* Location */}
+          {/* Location input */}
           <Text style={styles.label}>Location</Text>
           <TextInput
             style={styles.input}
@@ -126,7 +146,7 @@ export default function EditTaskScreen() {
             onChangeText={(text) => setTask({ ...task, location: text })}
           />
 
-          {/* Content */}
+          {/* Content input */}
           <Text style={styles.label}>Content</Text>
           <TextInput
             style={[styles.input, styles.textarea]}
@@ -137,7 +157,7 @@ export default function EditTaskScreen() {
             placeholder="Describe your task..."
           />
 
-          {/* Action Buttons */}
+          {/* Action Buttons: Save, Delete, Cancel */}
           <View style={styles.actionRow}>
             <TouchableOpacity style={[styles.actionButton, { backgroundColor: 'lightgreen' }]} onPress={handleSave}>
               <Ionicons name="checkmark" size={24} color="white" />
@@ -153,7 +173,7 @@ export default function EditTaskScreen() {
           </View>
         </View>
 
-        {/* 弹窗部分 */}
+        {/* Date picker modal */}
         <Modal visible={isDateModalVisible} transparent={true} animationType="slide">
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
@@ -166,6 +186,7 @@ export default function EditTaskScreen() {
           </View>
         </Modal>
 
+        {/* Time picker modal */}
         <Modal visible={isTimeModalVisible} transparent={true} animationType="slide">
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
@@ -177,11 +198,13 @@ export default function EditTaskScreen() {
             </View>
           </View>
         </Modal>
+
       </ScrollView>
     </SafeAreaView>
   );
 }
 
+// Styles
 const styles = StyleSheet.create({
   container: { padding: 20, backgroundColor: 'white', flexGrow: 1 },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },

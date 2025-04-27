@@ -1,13 +1,22 @@
+// A reusable component to display a single task item with its title, date, time, location, and status toggle button.
+// This component supports tapping the task to edit and toggling its completed/pending status.
+// The background color dynamically reflects the task's current status.
+
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Task } from '../types/Task';
 
 interface Props {
-  task: Task;
-  onToggleStatus: (id: string) => void;
-  onPress: () => void;
+  task: Task;                          // Task object to render
+  onToggleStatus: (id: string) => void; // Handler to toggle task status between pending/completed
+  onPress: () => void;                  // Handler when the task is tapped (navigate to edit)
 }
 
+/**
+ * Format the given Date object into a readable string (e.g., "May 5, 2025").
+ * @param date - Date to format
+ * @returns Formatted date string
+ */
 function formatDate(date: Date): string {
   return date.toLocaleDateString('en-US', {
     month: 'short',
@@ -17,16 +26,30 @@ function formatDate(date: Date): string {
 }
 
 export default function TaskItem({ task, onToggleStatus, onPress }: Props) {
+  // Determine background color based on task status
   const backgroundColor = task.status === 'completed' ? '#888888' : task.color;
 
   return (
-    <TouchableOpacity style={[styles.taskContainer, { backgroundColor }]} onPress={onPress}>
+    <TouchableOpacity
+      style={[styles.taskContainer, { backgroundColor }]}
+      onPress={onPress}
+    >
       <View style={styles.flex1}>
+        {/* Task title */}
         <Text style={styles.title}>{task.title}</Text>
-        <Text style={styles.time}>{formatDate(task.date)} | {task.time}</Text>
-        {task.location ? <Text style={styles.location}>{task.location}</Text> : null}
+
+        {/* Date and Time */}
+        <Text style={styles.time}>
+          {formatDate(task.date)} | {task.time}
+        </Text>
+
+        {/* Optional location */}
+        {task.location ? (
+          <Text style={styles.location}>{task.location}</Text>
+        ) : null}
       </View>
 
+      {/* Status toggle icon */}
       <TouchableOpacity onPress={() => onToggleStatus(task.id)}>
         <Ionicons
           name={task.status === 'pending' ? 'checkmark-circle' : 'close-circle'}

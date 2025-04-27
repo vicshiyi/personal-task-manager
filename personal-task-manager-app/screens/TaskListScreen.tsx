@@ -1,3 +1,7 @@
+// Displays a list of tasks organized by date, time, and completion status.
+// Supports filtering tasks by Today, Week, Month, or All, and toggling between Completed and Pending tabs.
+// Allows users to add new tasks, edit existing tasks, or toggle task status.
+
 import { SafeAreaView, View, Text, FlatList, StyleSheet, TouchableOpacity, Platform, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -6,12 +10,17 @@ import TaskItem from '../components/TaskItem';
 import { mockTasks } from '../data/mockTasks';
 import { Task } from '../types/Task';
 
+// Filter options
 const filters = ['Today', 'Week', 'Month', 'All'] as const;
+// Tabs for Completed or Pending tasks
 const tabs = ['Completed', 'Pending'] as const;
 
 type Filter = typeof filters[number];
 type Tab = typeof tabs[number];
 
+/**
+ * Check if a given date is today.
+ */
 function isToday(date: Date): boolean {
   const today = new Date();
   return date.getDate() === today.getDate() &&
@@ -19,6 +28,9 @@ function isToday(date: Date): boolean {
          date.getFullYear() === today.getFullYear();
 }
 
+/**
+ * Check if a given date falls within this week (Monday to Sunday).
+ */
 function isThisWeek(date: Date): boolean {
   const today = new Date();
   const startOfWeek = new Date(today);
@@ -29,12 +41,19 @@ function isThisWeek(date: Date): boolean {
   return date >= startOfWeek && date <= endOfWeek;
 }
 
+/**
+ * Check if a given date falls within the current month.
+ */
 function isThisMonth(date: Date): boolean {
   const today = new Date();
   return date.getMonth() === today.getMonth() &&
          date.getFullYear() === today.getFullYear();
 }
 
+/**
+ * Compare two time strings (e.g., '9:00 am', '2:30 pm').
+ * Used to sort tasks within the same day.
+ */
 function compareTime(t1: string, t2: string): number {
   const parse = (time: string) => {
     const match = time.match(/(\d+):(\d+)\s*(am|pm)/i);
@@ -49,7 +68,9 @@ function compareTime(t1: string, t2: string): number {
   return parse(t1) - parse(t2);
 }
 
-// ➡️ 新增，排序函数
+/**
+ * Sort a list of tasks first by date, then by time.
+ */
 function sortTasks(tasks: Task[]): Task[] {
   return tasks.sort((a, b) => {
     if (a.date.getTime() !== b.date.getTime()) {
@@ -59,6 +80,9 @@ function sortTasks(tasks: Task[]): Task[] {
   });
 }
 
+/**
+ * Get subtitle under filter buttons (Today/Week/Month) dynamically.
+ */
 function getFilterSubtitle(filter: Filter): string {
   const today = new Date();
   if (filter === 'Today') {
@@ -93,6 +117,9 @@ export default function TaskListScreen() {
     year: 'numeric',
   });
 
+  /**
+   * Toggle the completion status of a task.
+   */
   const handleToggleStatus = (id: string) => {
     setTasks(prevTasks =>
       sortTasks(
@@ -105,6 +132,9 @@ export default function TaskListScreen() {
     );
   };
 
+  /**
+   * Navigate to EditTaskScreen to edit an existing task or add a new task.
+   */
   const handleEditTask = (task: Task, isNew = false) => {
     navigation.navigate('EditTaskScreen', {
       task,
@@ -125,6 +155,9 @@ export default function TaskListScreen() {
     });
   };
 
+  /**
+   * Initialize and navigate to add a new blank task.
+   */
   const handleAddTask = () => {
     const newTask: Task = {
       id: Date.now().toString(),
@@ -140,6 +173,7 @@ export default function TaskListScreen() {
     handleEditTask(newTask, true);
   };
 
+  // Filter tasks based on active tab and filter
   const filteredTasks = tasks.filter(task => {
     if (activeTab === 'Completed' && task.status !== 'completed') return false;
     if (activeTab === 'Pending' && task.status !== 'pending') return false;
@@ -151,8 +185,11 @@ export default function TaskListScreen() {
   
 
   return (
+    
     <SafeAreaView style={[styles.safeArea, { paddingBottom: insets.bottom }]}>
       <View style={styles.container}>
+
+        {/* Header */}
         <View style={styles.headerRow}>
           <View>
             <Text style={styles.greeting}>Hi, Victoria!</Text>
@@ -164,6 +201,7 @@ export default function TaskListScreen() {
           />
         </View>
 
+        {/* Filter Buttons */}
         <View style={styles.filterRow}>
           {filters.map(f => (
             <TouchableOpacity
@@ -179,6 +217,7 @@ export default function TaskListScreen() {
           ))}
         </View>
 
+        {/* Task List */}
         <FlatList
           data={filteredTasks}
           keyExtractor={item => item.id}
@@ -194,6 +233,7 @@ export default function TaskListScreen() {
         />
       </View>
 
+      {/* Bottom Tabs */}
       <View style={styles.bottomTabContainer}>
         <TouchableOpacity
           style={[styles.bottomTab, activeTab === 'Completed' ? styles.activeCompletedTab : styles.inactiveTab]}
