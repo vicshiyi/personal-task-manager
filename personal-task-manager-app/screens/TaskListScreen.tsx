@@ -11,11 +11,57 @@ const tabs = ['Completed', 'Pending'] as const;
 type Filter = typeof filters[number];
 type Tab = typeof tabs[number];
 
+function isToday(date: Date): boolean {
+  const today = new Date();
+  return date.getDate() === today.getDate() &&
+         date.getMonth() === today.getMonth() &&
+         date.getFullYear() === today.getFullYear();
+}
+
+function isThisWeek(date: Date): boolean {
+  const today = new Date();
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate() - today.getDay() + 1);
+  startOfWeek.setHours(0, 0, 0, 0);
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+  return date >= startOfWeek && date <= endOfWeek;
+}
+
+function isThisMonth(date: Date): boolean {
+  const today = new Date();
+  return date.getMonth() === today.getMonth() &&
+         date.getFullYear() === today.getFullYear();
+}
+
+function compareTime(t1: string, t2: string): number {
+  const parse = (time: string) => {
+    const match = time.match(/(\d+):(\d+)\s*(am|pm)/i);
+    if (!match) return 0;
+    let [_, h, m, ampm] = match;
+    let hours = parseInt(h);
+    const minutes = parseInt(m);
+    if (ampm.toLowerCase() === 'pm' && hours !== 12) hours += 12;
+    if (ampm.toLowerCase() === 'am' && hours === 12) hours = 0;
+    return hours * 60 + minutes;
+  };
+  return parse(t1) - parse(t2);
+}
+
 export default function TaskListScreen() {
   const [tasks, setTasks] = useState<Task[]>(mockTasks);
   const [activeFilter, setActiveFilter] = useState<Filter>('Today');
   const [activeTab, setActiveTab] = useState<Tab>('Completed');
   const insets = useSafeAreaInsets();
+
+  const filteredTasks = tasks.filter(task => {
+    if (activeTab === 'Completed' && task.status !== 'completed') return false;
+    if (activeTab === 'Pending' && task.status !== 'pending') return false;
+    if (activeFilter === 'Today') return isToday(task.date);
+    if (activeFilter === 'Week') return isThisWeek(task.date);
+    if (activeFilter === 'Month') return isThisMonth(task.date);
+    return true;
+  }).sort((a, b) => compareTime(a.time, b.time));
 
   return (
     <SafeAreaView style={[styles.safeArea, { paddingBottom: insets.bottom }]}>
@@ -46,18 +92,19 @@ export default function TaskListScreen() {
         </View>
 
         <FlatList
-          data={tasks}
+          data={filteredTasks}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <TaskItem task={item} />}
           contentContainerStyle={{ paddingBottom: 80 }}
+          ListEmptyComponent={<Text style={styles.emptyText}>No tasks to show.</Text>}
         />
       </View>
 
       <View style={styles.bottomTabContainer}>
         <TouchableOpacity
-          style={[styles.bottomTab, activeTab === 'Completed' && styles.activeTab]}
+          style={[styles.bottomTab, activeTab === 'Completed' ? styles.activeCompletedTab : styles.inactiveTab]}
           onPress={() => setActiveTab('Completed')}>
-          <Text style={[styles.tabText, activeTab === 'Completed' && styles.activeTabText]}>Completed</Text>
+          <Text style={[styles.tabText, activeTab === 'Completed' ? styles.activeCompletedTabText : styles.inactiveTabText]}>Completed</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.addButton}>
@@ -65,9 +112,9 @@ export default function TaskListScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.bottomTab, activeTab === 'Pending' && styles.activeTab]}
+          style={[styles.bottomTab, activeTab === 'Pending' ? styles.activePendingTab : styles.inactiveTab]}
           onPress={() => setActiveTab('Pending')}>
-          <Text style={[styles.tabText, activeTab === 'Pending' && styles.activeTabText]}>Pending</Text>
+          <Text style={[styles.tabText, activeTab === 'Pending' ? styles.activePendingTabText : styles.inactiveTabText]}>Pending</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -156,20 +203,34 @@ const styles = StyleSheet.create({
     paddingBottom: Platform.OS === 'ios' ? 10 : 0,
   },
   bottomTab: {
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 8,
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100%',
   },
-  tabText: {
-    color: '#333',
+  activeCompletedTab: {
+    backgroundColor: '#555',
+  },
+  activeCompletedTabText: {
+    color: 'white',
+    fontWeight: '700',
+  },
+  activePendingTab: {
+    backgroundColor: '#eee',
+  },
+  activePendingTabText: {
+    color: '#666',
+    fontWeight: '700',
+  },
+  inactiveTab: {
+    backgroundColor: '#fff',
+  },
+  inactiveTabText: {
+    color: '#666',
     fontWeight: '500',
   },
-  activeTab: {
-    backgroundColor: '#ccc',
-  },
-  activeTabText: {
-    color: 'black',
-    fontWeight: '700',
+  tabText: {
+    fontSize: 16,
   },
   addButton: {
     width: 50,
@@ -188,5 +249,10 @@ const styles = StyleSheet.create({
   addIcon: {
     fontSize: 28,
     color: 'white',
+  },
+  emptyText: {
+    marginTop: 20,
+    textAlign: 'center',
+    color: '#999',
   },
 });
