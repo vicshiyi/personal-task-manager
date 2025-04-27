@@ -1,14 +1,25 @@
-// data/mockTasks.ts
+// This file provides mock task data for development and testing purposes.
+// Tasks include title, time, location, color, status, date, and content fields.
+// Useful for initial rendering and feature testing without requiring backend integration.
+
 import { Task } from '../types/Task';
 
-// 获取今天的日期
+// Get today's date
 const today = new Date();
+
+/**
+ * Create a new date offset by a given number of days.
+ * @param base - The base date
+ * @param days - Number of days to add (positive) or subtract (negative)
+ * @returns New Date object
+ */
 const addDays = (base: Date, days: number) => {
   const copy = new Date(base);
   copy.setDate(base.getDate() + days);
   return copy;
 };
 
+// Mock task list
 export const mockTasks: Task[] = [
   {
     id: '1',
