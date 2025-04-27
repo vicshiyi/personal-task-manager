@@ -1,4 +1,3 @@
-// components/TaskItem.tsx
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Task } from '../types/Task';
@@ -17,8 +16,10 @@ function formatDate(date: Date): string {
 }
 
 export default function TaskItem({ task, onToggleStatus }: Props) {
+  const backgroundColor = task.status === 'completed' ? '#888888' : task.color;
+
   return (
-    <View style={[styles.taskContainer, { backgroundColor: task.color }]}>
+    <View style={[styles.taskContainer, { backgroundColor }]}> 
       <View style={{ flex: 1 }}>
         <Text style={styles.title}>{task.title}</Text>
         <Text style={styles.time}>{formatDate(task.date)} | {task.time}</Text>
