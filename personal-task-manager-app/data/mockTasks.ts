@@ -30,7 +30,7 @@ export const mockTasks: Task[] = [
     id: '4',
     title: 'Pick Up my Dog',
     time: '6:00 pm',
-    location: 'Hellow World Vet',
+    location: 'Hello World Vet',
     completed: true,
     color: '#8ca9ff',
   },

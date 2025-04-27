@@ -1,4 +1,4 @@
-import { SafeAreaView, View, Text, FlatList, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { SafeAreaView, View, Text, FlatList, StyleSheet, TouchableOpacity, Platform, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState } from 'react';
 import TaskItem from '../components/TaskItem';
@@ -20,8 +20,16 @@ export default function TaskListScreen() {
   return (
     <SafeAreaView style={[styles.safeArea, { paddingBottom: insets.bottom }]}>
       <View style={styles.container}>
-        <Text style={styles.greeting}>Hi, Victoria!</Text>
-        <Text style={styles.date}>May 1, 2025</Text>
+        <View style={styles.headerRow}>
+          <View>
+            <Text style={styles.greeting}>Hi, Victoria!</Text>
+            <Text style={styles.date}>May 1, 2025</Text>
+          </View>
+          <Image
+            source={{ uri: 'https://i.pravatar.cc/100' }}
+            style={styles.avatar}
+          />
+        </View>
 
         <View style={styles.filterRow}>
           {filters.map((f) => (
@@ -31,7 +39,7 @@ export default function TaskListScreen() {
               onPress={() => setActiveFilter(f)}>
               <Text style={[styles.filterText, activeFilter === f && styles.activeFilterText]}>{f}</Text>
               {f === 'Today' && (
-                <Text style={[styles.filterSubText, activeFilter === f && styles.activeFilterText]}>5.1</Text>
+                <Text style={[styles.filterSubText, activeFilter === f && styles.activeFilterText]}>May 1</Text>
               )}
             </TouchableOpacity>
           ))}
@@ -78,6 +86,17 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     backgroundColor: 'white',
   },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  avatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+  },
   greeting: {
     fontSize: 28,
     fontWeight: 'bold',
@@ -86,7 +105,6 @@ const styles = StyleSheet.create({
   },
   date: {
     fontSize: 16,
-    marginBottom: 16,
     color: '#666',
   },
   filterRow: {
